@@ -7,6 +7,8 @@ if  [[ -z "$CACHE_FILE" ]]; then
   export CACHE_FILE="work/database.db"
 fi
 
+echo "cache file $CACHE_FILE"
+
 if  [[ -z "$CACHE_FILE" ]]; then
   idir=$(echo $CACHE_FILE | awk -F/ 'BEGIN{str="/"} {for(i=1;i<NF;i++)str=str"/"$i} END{print(str)}')
 else

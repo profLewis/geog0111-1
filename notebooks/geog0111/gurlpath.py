@@ -26,12 +26,12 @@ from argparse import Namespace
 
 try:
   from geog0111.cylog import Cylog
-  from geog0111.database import Database
+  from geog0111.db import CacheDatabase
   from geog0111.fdict import fdict
   from geog0111.lists import ginit,list_resolve,name_resolve,list_info
 except:
   from cylog import Cylog
-  from database import Database
+  from db import CacheDatabase
   from fdict import fdict
   from lists import ginit,list_resolve,name_resolve,list_info
 
@@ -59,6 +59,10 @@ class URL(urlpath.URL,urllib.parse._NetlocResultMixinStr, PurePath):
   modified new and init
   '''
   def __new__(cls,*args,**kwargs):
+      '''
+      new URL
+      makes call to init(**kwargs)
+      '''
       self = super(URL, cls).__new__(cls,*args) 
       self.init(**kwargs)
       return self
@@ -80,11 +84,11 @@ class URL(urlpath.URL,urllib.parse._NetlocResultMixinStr, PurePath):
 
   def init(self,**kwargs):
       self.__dict__.update(ginit(self,**kwargs))
-      if 'database' in self.__dict__ and type(self.database) == Database:
+      if 'database' in self.__dict__ and type(self.database) == CacheDatabase:
         # already have databse stored
         pass
       else:
-        self.database = Database(self.db_file,\
+        self.database = CacheDatabase(self.db_file,\
                           **(fdict(self.__dict__.copy())))
 
   def __del__(self):
@@ -152,7 +156,8 @@ class URL(urlpath.URL,urllib.parse._NetlocResultMixinStr, PurePath):
     if ifile:
       old = self.local_file
       self.local_file = Path(ifile)
-      if self.local_file.exists() and self.local_file.suffix == '.store':
+      if self.local_file.exists():
+        # and self.local_file.suffix == '.store':
         return True
       if self.local_file.suffix != '.store':
         self.local_file = old
@@ -186,7 +191,7 @@ class URL(urlpath.URL,urllib.parse._NetlocResultMixinStr, PurePath):
     # replace ' '
     self.local_file = Path(str(self.local_file).replace(' ','_'))
     suffix = self.local_file.suffix
-    self.local_file = self.local_file.with_suffix(suffix + '.store')
+    self.local_file = self.local_file.with_suffix(suffix)
     self.check_path(self.local_file.parent)
     self.local_file.parent.mkdir(parents=True,exist_ok=True) 
     return self.local_file
@@ -264,6 +269,7 @@ class URL(urlpath.URL,urllib.parse._NetlocResultMixinStr, PurePath):
         self.msg(f'{self} is not a URL: interpreting as Path')
         return Path(self).open(**kwargs)
 
+      import pdb;pdb.set_trace()
       # check in database
       store_url  = str(self)
       store_flag = 'data'
